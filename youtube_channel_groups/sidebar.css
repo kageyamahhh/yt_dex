@@ -1,0 +1,33 @@
+/* 配色はYouTubeのCSS変数に頼らず、拡張側で明/暗を持つ（暗いテーマは html[dark] または JS判定の data-ytcg-theme） */
+#ytcg-sidebar{--ytcg-text:#0f0f0f;--ytcg-text2:#606060;--ytcg-hover:rgba(0,0,0,.07);--ytcg-chip:rgba(0,0,0,.06);--ytcg-chip-hover:rgba(0,0,0,.12);--ytcg-border:rgba(0,0,0,.12);--ytcg-ph-bg:rgba(0,0,0,.1);--ytcg-ph-text:#606060;--ytcg-divider:rgba(0,0,0,.28)}
+html[dark] #ytcg-sidebar,#ytcg-sidebar[data-ytcg-theme="dark"]{--ytcg-text:#f1f1f1;--ytcg-text2:#aaa;--ytcg-hover:rgba(255,255,255,.1);--ytcg-chip:rgba(255,255,255,.1);--ytcg-chip-hover:rgba(255,255,255,.2);--ytcg-border:rgba(255,255,255,.2);--ytcg-ph-bg:rgba(255,255,255,.18);--ytcg-ph-text:#e0e0e0;--ytcg-divider:rgba(255,255,255,.32)}
+#ytcg-sidebar[data-ytcg-theme="light"]{--ytcg-text:#0f0f0f;--ytcg-text2:#606060;--ytcg-hover:rgba(0,0,0,.07);--ytcg-chip:rgba(0,0,0,.06);--ytcg-chip-hover:rgba(0,0,0,.12);--ytcg-border:rgba(0,0,0,.12);--ytcg-ph-bg:rgba(0,0,0,.1);--ytcg-ph-text:#606060;--ytcg-divider:rgba(0,0,0,.28)}
+#ytcg-sidebar{display:block!important;box-sizing:border-box;width:100%;min-width:0;margin:8px 0 12px;padding:0 0 8px;color:var(--ytcg-text)!important;font-family:Roboto,Arial,sans-serif;border-bottom:1px solid var(--ytcg-border);overflow:visible!important}
+#ytcg-sidebar *{box-sizing:border-box}
+#ytcg-sidebar .ytcg-heading{display:flex!important;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0;padding:8px 16px;font-size:14px;font-weight:600;color:var(--ytcg-text)!important}
+#ytcg-sidebar .ytcg-heading>a.ytcg-title{display:block!important;flex:0 0 auto;white-space:nowrap;color:var(--ytcg-text)!important;text-decoration:none!important;cursor:pointer}
+#ytcg-sidebar .ytcg-heading>a.ytcg-title:hover{text-decoration:underline!important}
+#ytcg-sidebar .ytcg-heading>span{display:block!important;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ytcg-text)!important}
+#ytcg-sidebar .ytcg-manage{flex:0 0 auto;border:0;border-radius:16px;padding:5px 10px;cursor:pointer;color:var(--ytcg-text)!important;background:var(--ytcg-chip);font-size:12px}
+#ytcg-sidebar .ytcg-manage:hover{background:var(--ytcg-chip-hover)}
+#ytcg-sidebar .ytcg-group-header{display:flex!important;align-items:center;width:100%;min-width:0;min-height:36px;border:0;padding:0 16px 0 calc(16px + var(--ytcg-depth,0)*16px);gap:8px;background:transparent;color:var(--ytcg-text)!important;text-align:left;cursor:pointer;font-size:14px}
+#ytcg-sidebar .ytcg-group-header:hover,#ytcg-sidebar .ytcg-channel:hover{background:var(--ytcg-hover)}
+#ytcg-sidebar .ytcg-caret{display:block!important;flex:0 0 12px;width:12px;font-size:17px;color:var(--ytcg-text2)!important}
+#ytcg-sidebar .ytcg-group-name{display:block!important;flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--ytcg-text)!important}
+#ytcg-sidebar .ytcg-count{flex:0 0 auto;color:var(--ytcg-text2)!important;font-size:12px}
+#ytcg-sidebar .ytcg-channel{display:flex!important;align-items:center;gap:12px;width:calc(100% - 16px);min-width:0;height:36px;padding:0 12px 0 calc(36px + (var(--ytcg-depth,1) - 1)*16px);color:var(--ytcg-text)!important;text-decoration:none;font-size:14px;border-radius:10px;margin:0 8px;overflow:hidden}
+#ytcg-sidebar .ytcg-avatar,#ytcg-sidebar .ytcg-avatar-placeholder{display:block!important;width:24px;height:24px;border-radius:50%;flex:0 0 24px;object-fit:cover}
+#ytcg-sidebar .ytcg-avatar-placeholder{display:flex!important;align-items:center;justify-content:center;color:var(--ytcg-ph-text)!important;background:var(--ytcg-ph-bg);font-size:12px}
+#ytcg-sidebar .ytcg-channel-name{display:block!important;flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;visibility:visible!important;opacity:1!important;color:var(--ytcg-text)!important}
+#ytcg-sidebar .ytcg-note{display:block!important;padding:8px 16px 0;font-size:11px;color:var(--ytcg-text2)!important}
+.ytcg-original-channel-hidden{display:none!important}
+/* 仕切り棒: チャンネルのアイコン左端(= 余白8px + 左パディング)から、サイドバーの右端まで */
+#ytcg-sidebar .ytcg-divider{display:block!important;height:2px;margin:4px 0 4px calc(8px + 36px + (var(--ytcg-depth,1) - 1)*16px);border-radius:1px;background:var(--ytcg-divider)}
+#ytcg-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;padding:10px 18px;border-radius:8px;background:#323232;color:#fff;font:14px/1.4 Roboto,Arial,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.ytcg-hide-services,.ytcg-hide-explore,.ytcg-hide-entry,.ytcg-hide-mypage{display:none!important}
+/* 配信中のチャンネル(グループ表示とは別) */
+#ytcg-sidebar .ytcg-live-heading{display:flex!important;align-items:center;gap:8px;padding:6px 16px 2px;font-size:13px;font-weight:600;color:var(--ytcg-text)!important}
+#ytcg-sidebar .ytcg-live-heading>span:nth-child(2){flex:1 1 auto;color:var(--ytcg-text)!important}
+#ytcg-sidebar .ytcg-live-dot{flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:#e62117}
+#ytcg-sidebar .ytcg-live-badge{flex:0 0 auto;padding:1px 5px;border-radius:3px;background:#e62117;color:#fff!important;font-size:10px;font-weight:700;letter-spacing:.03em}
+#ytcg-sidebar .ytcg-live-sep{height:1px;margin:6px 16px;background:var(--ytcg-border)}

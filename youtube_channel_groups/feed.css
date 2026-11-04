@@ -1,0 +1,451 @@
+/* 登録チャンネルページ整理くん */
+
+/* ---------- タブバー ---------- */
+#sn-anchor {
+  display: block;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+#sn-bar {
+  --sn-accent: #ff7aa8;
+  --sn-accent-text: #fff;
+  position: sticky;
+  top: var(--ytd-masthead-height, 56px);
+  z-index: 1000;
+  box-sizing: border-box;
+  padding: 0 24px;
+  background: var(--yt-spec-base-background, #0f0f0f);
+  border-bottom: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.1));
+  font-family: Roboto, Arial, "Noto Sans JP", sans-serif;
+  font-size: 14px;
+  color: var(--yt-spec-text-primary, #f1f1f1);
+}
+html:not([dark]) #sn-bar {
+  --sn-accent: #e0457b;
+}
+
+/* 重なりを避けるための余白(content.js が測って入れる)。メニューより後ろの一覧が下がる */
+ytd-browse[data-sn-active] #sn-bar {
+  margin-bottom: var(--sn-offset-bar, 0px);
+}
+
+#sn-bar .sn-row {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 4px;
+}
+#sn-bar .sn-row[hidden] {
+  display: none;
+}
+#sn-bar .sn-subrow {
+  min-height: 40px;
+  border-top: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.1));
+}
+#sn-bar .sn-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+#sn-bar .sn-spacer {
+  flex: 1 1 auto;
+}
+
+#sn-bar .sn-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--yt-spec-text-secondary, #aaa);
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+#sn-bar .sn-subrow .sn-tab {
+  height: 40px;
+}
+#sn-bar .sn-tab:hover {
+  color: var(--yt-spec-text-primary, #f1f1f1);
+}
+#sn-bar .sn-tab[aria-selected="true"] {
+  color: var(--sn-accent);
+  border-bottom-color: var(--sn-accent);
+}
+#sn-bar .sn-tab:focus-visible,
+#sn-bar .sn-view:focus-visible,
+#sn-bar .sn-more:focus-visible {
+  outline: 2px solid var(--sn-accent);
+  outline-offset: -2px;
+}
+
+#sn-bar .sn-badge {
+  display: inline-block;
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--sn-accent);
+  color: var(--sn-accent-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+#sn-bar .sn-sep {
+  color: var(--yt-spec-text-secondary, #aaa);
+}
+
+#sn-bar .sn-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 8px;
+  color: var(--yt-spec-text-secondary, #aaa);
+  font-size: 12px;
+}
+#sn-bar .sn-more {
+  padding: 2px 8px;
+  border: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.2));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--yt-spec-text-primary, #f1f1f1);
+  font: inherit;
+  cursor: pointer;
+}
+#sn-bar .sn-more:hover {
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, 0.1));
+}
+
+#sn-bar .sn-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--yt-spec-text-primary, #f1f1f1);
+  cursor: pointer;
+}
+#sn-bar .sn-view:hover {
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, 0.1));
+}
+#sn-bar .sn-view[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+#sn-bar .sn-view svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+/* ---------- フィードの絞り込み ---------- */
+ytd-browse[data-sn-active] .sn-hidden {
+  display: none !important;
+}
+/* 追加読み込みで増えた項目は、判定が終わるまで隠す(一瞬でも絞り込み前の表示を見せない) */
+ytd-browse[data-sn-active] ytd-rich-grid-renderer ytd-rich-item-renderer:not([data-sn-type]):not(ytd-rich-section-renderer ytd-rich-item-renderer),
+ytd-browse[data-sn-active] ytd-rich-grid-renderer ytd-rich-section-renderer:not([data-sn-type]) {
+  display: none !important;
+}
+
+/* 行コンテナを解いて、アイテムを同じ flex コンテナに並べる(並べ替え・非表示で隙間を作らないため) */
+ytd-browse[data-sn-active] ytd-rich-grid-renderer #contents.ytd-rich-grid-renderer {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  /* タブメニューとサムネイルが重なるとき、content.js が測った分だけ一覧を下げる(YouTube側の余白は触らない) */
+  border-top: var(--sn-offset-cont, 0px) solid transparent;
+}
+ytd-browse[data-sn-active] ytd-rich-grid-row,
+ytd-browse[data-sn-active] ytd-rich-grid-row > #contents {
+  display: contents !important;
+}
+
+ytd-browse[data-sn-active] ytd-rich-item-renderer,
+ytd-browse[data-sn-active] ytd-rich-section-renderer,
+ytd-browse[data-sn-active] ytd-continuation-item-renderer,
+ytd-browse[data-sn-active] .sn-divider {
+  order: var(--sn-order, 0);
+}
+
+/* 配信中と配信予定の仕切り線 */
+.sn-divider {
+  flex: 0 0 100%;
+  box-sizing: border-box;
+  height: 1px;
+  margin: 8px 8px 16px;
+  background: var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.2));
+}
+.sn-divider.sn-hidden {
+  display: none !important;
+}
+
+/* 探索中は項目を隠し、追加読み込みの要素を画面内に引き上げる */
+ytd-browse[data-sn-scan] ytd-rich-item-renderer,
+ytd-browse[data-sn-scan] ytd-rich-section-renderer,
+ytd-browse[data-sn-scan] .sn-divider {
+  display: none !important;
+}
+
+/* Shortタブ: 棚の見出し(「ショート」「すべて表示」)と「もっと見る」は隠す */
+ytd-browse[data-sn-active][data-sn-main="short"] .sn-chrome {
+  display: none !important;
+}
+
+/* 追加読み込みの保留(探索を打ち切ったとき) */
+ytd-browse[data-sn-hold] ytd-continuation-item-renderer {
+  display: none !important;
+}
+
+
+/* ---------- 「通知を受け取る」ボタンは表示しない ---------- */
+ytd-browse[data-sn-active] .sn-notify-hidden,
+ytd-browse[data-sn-active] ytd-rich-item-renderer button[aria-label*="通知を受け取"],
+ytd-browse[data-sn-active] ytd-rich-item-renderer button[aria-label*="Notify me"],
+ytd-browse[data-sn-active] ytd-rich-item-renderer button[aria-label*="リマインダー"] {
+  display: none !important;
+}
+
+/* ---------- 表示モード: 小(大の60%) ---------- */
+ytd-browse[data-sn-active][data-sn-view="small"] ytd-rich-item-renderer {
+  width: var(--sn-small-w, calc(100% / var(--ytd-rich-grid-items-per-row, 4) * 0.6)) !important;
+  margin-left: var(--sn-small-ml, 5px) !important;
+  margin-right: var(--sn-small-mr, 5px) !important;
+  margin-bottom: var(--sn-small-mb, 14px) !important;
+  box-sizing: border-box;
+}
+
+/* ---------- 表示モード: 一列表示 ---------- */
+ytd-browse[data-sn-active][data-sn-view="list"] ytd-rich-item-renderer {
+  width: calc(100% - 16px) !important;
+  max-width: 1100px;
+  margin: 0 8px 12px !important;
+  box-sizing: border-box;
+}
+/* サムネイル・文字・それを並べる箱は、content.js が印(sn-lay-*)を付ける。YouTubeのクラス名には頼らない */
+ytd-browse[data-sn-active][data-sn-view="list"] .sn-lay-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 12px;
+}
+ytd-browse[data-sn-active][data-sn-view="list"] .sn-lay-thumb {
+  display: block !important;
+  position: relative;
+  flex: 0 0 var(--sn-list-thumb, 40%) !important;
+  width: var(--sn-list-thumb, 40%) !important;
+  min-width: var(--sn-list-thumb, 40%) !important;
+  max-width: var(--sn-list-thumb, 40%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+ytd-browse[data-sn-active][data-sn-view="list"] ytd-rich-item-renderer[data-sn-type="live"] .sn-lay-thumb,
+ytd-browse[data-sn-active][data-sn-view="list"] ytd-rich-item-renderer[data-sn-type="video"] .sn-lay-thumb {
+  aspect-ratio: 16 / 9;
+}
+ytd-browse[data-sn-active][data-sn-view="list"] .sn-lay-thumb img,
+ytd-browse[data-sn-active][data-sn-view="list"] .sn-lay-thumb yt-image,
+ytd-browse[data-sn-active][data-sn-view="list"] .sn-lay-thumb yt-thumbnail-view-model,
+ytd-browse[data-sn-active][data-sn-view="list"] .sn-lay-thumb ytd-thumbnail {
+  max-width: 100% !important;
+}
+ytd-browse[data-sn-active][data-sn-view="list"] .sn-lay-meta {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding-top: 0 !important;
+  margin: 0 !important;
+}
+
+/* ---------- チャンネル名が長くても「視聴中」「公開予定」が切れないよう、チャンネル名の後ろで改行 ---------- */
+ytd-browse[data-sn-active] .sn-lay-line {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  white-space: normal !important;
+}
+ytd-browse[data-sn-active] .sn-lay-chan {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* ---------- グループでの絞り込み ---------- */
+#sn-bar .sn-filter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+#sn-bar .sn-filter[hidden] {
+  display: none;
+}
+#sn-bar .sn-filterrow {
+  min-height: 40px;
+  border-top: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.1));
+}
+#sn-bar .sn-filter-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.25));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--yt-spec-text-primary, #f1f1f1);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+#sn-bar .sn-filter-btn:hover:not([disabled]) {
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, 0.1));
+}
+#sn-bar .sn-filter-btn.sn-active {
+  border-color: var(--sn-accent);
+  background: color-mix(in srgb, var(--sn-accent) 14%, transparent);
+  color: var(--sn-accent);
+  font-weight: 600;
+}
+#sn-bar .sn-filter-btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+#sn-bar .sn-filter-btn:focus-visible,
+#sn-bar .sn-opt:focus-visible,
+#sn-bar .sn-reset:focus-visible {
+  outline: 2px solid var(--sn-accent);
+  outline-offset: -2px;
+}
+#sn-bar .sn-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 1001;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  padding: 6px 0;
+  border: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.2));
+  border-radius: 10px;
+  background: var(--yt-spec-menu-background, var(--yt-spec-base-background, #0f0f0f));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+#sn-bar .sn-menu[hidden] {
+  display: none;
+}
+#sn-bar .sn-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--yt-spec-text-primary, #f1f1f1);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+#sn-bar .sn-opt:hover {
+  background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, 0.1));
+}
+#sn-bar .sn-opt[aria-selected="true"] {
+  color: var(--sn-accent);
+  font-weight: 600;
+}
+#sn-bar .sn-opt-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#sn-bar .sn-opt-count {
+  flex: 0 0 auto;
+  color: var(--yt-spec-text-secondary, #aaa);
+  font-size: 12px;
+}
+#sn-bar .sn-noticerow {
+  min-height: 32px;
+  gap: 12px;
+  border-top: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.1));
+  color: var(--yt-spec-text-secondary, #aaa);
+  font-size: 12.5px;
+}
+#sn-bar .sn-reset {
+  padding: 2px 10px;
+  border: 1px solid var(--yt-spec-10-percent-layer, rgba(255, 255, 255, 0.25));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--yt-spec-text-primary, #f1f1f1);
+  font: inherit;
+  cursor: pointer;
+}
+#sn-bar .sn-reset[hidden] {
+  display: none;
+}
+
+/* ---------- フィルターのボタン(じょうごアイコン + グループ名) ---------- */
+#sn-bar .sn-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+}
+#sn-bar .sn-filter-btn svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+#sn-bar .sn-filter-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#sn-bar .sn-caret {
+  flex: 0 0 auto;
+  font-size: 11px;
+}
+
+/* ---------- チャンネル名が長いときは「…」で省略(隣の枠に被らない) ---------- */
+ytd-browse[data-sn-active] .sn-chan-box {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+ytd-browse[data-sn-active] .sn-chan-link {
+  display: inline-block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  vertical-align: bottom;
+}
+
+/* ---------- Shortフィードの一覧(Shortタブ) ---------- */
+#sn-shorts { display: none; }
+ytd-browse[data-sn-shortfeed][data-sn-main="short"] #sn-shorts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 20px 12px;
+  padding: 16px 12px 40px;
+}
+ytd-browse[data-sn-shortfeed][data-sn-main="short"] ytd-rich-grid-renderer { display: none !important; }
+#sn-shorts .sn-hidden { display: none !important; }
+#sn-shorts .sn-card { min-width: 0; }
+#sn-shorts .sn-sc { display: block; color: inherit; text-decoration: none; }
+#sn-shorts .sn-sc-th { aspect-ratio: 9 / 16; border-radius: 12px; overflow: hidden; background: rgba(128, 128, 128, 0.25); }
+#sn-shorts .sn-sc-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#sn-shorts .sn-sc-title { margin-top: 8px; font-size: 14px; font-weight: 500; line-height: 1.35; color: var(--yt-spec-text-primary, #f1f1f1); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+#sn-shorts .sn-sc-chbox { margin-top: 4px; min-width: 0; }
+#sn-shorts .sn-sc-ch { display: block; font-size: 12px; color: var(--yt-spec-text-secondary, #aaa); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#sn-shorts a.sn-sc-ch:hover { text-decoration: underline; }

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>yt_dex</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<header>
+  <h1>yt_dex</h1>
+  <p>グループを作り、各チャンネルを必ず1つのグループに割り当てます。グループは入れ子にできます。</p>
+</header>
+<main>
+  <section class="panel">
+    <h2>サイドメニューのカスタマイズ</h2>
+    <label class="check"><input type="checkbox" id="opt-hide-explore"> 「探索」を非表示にする</label>
+    <label class="check"><input type="checkbox" id="opt-hide-services"> 「YouTube のその他のサービス」を非表示にする</label>
+    <label class="check"><input type="checkbox" id="opt-hide-home"> 「ホーム」を非表示にする</label>
+    <label class="check"><input type="checkbox" id="opt-hide-shorts"> 「ショート」を非表示にする</label>
+    <label class="check"><input type="checkbox" id="opt-hide-mypage"> 「マイページ」を非表示にする</label>
+    <label class="check"><input type="checkbox" id="opt-hide-report"> 「報告履歴」を非表示にする</label>
+    <label class="check"><input type="checkbox" id="opt-show-live"> 現在配信中のチャンネルを、グループの上に表示する（YouTubeを開いた時点の状態）</label>
+  </section>
+
+  <section class="panel">
+    <h2>登録チャンネルページのカスタマイズ</h2>
+    <label class="check"><input type="checkbox" id="opt-feed-filter"> グループで絞り込む操作を表示する</label>
+    <label class="check"><input type="checkbox" id="opt-feed-promote"> 配信開始の時刻になったら、配信予定の枠を自動で「配信中」の欄へ移す</label>
+    <label class="check"><input type="checkbox" id="opt-feed-remember"> 選んだグループを次回も引き継ぐ(オフのときは、開くたびに「すべて」から始まります)</label>
+    <p class="hint">登録チャンネルページの「ライブ・動画・Short」の下に、グループで絞り込む操作が出ます。ここで作ったグループ(下位グループを含む)に属するチャンネルの項目だけを表示します。</p>
+  </section>
+
+  <section class="panel">
+    <h2>グループ</h2>
+    <form id="group-form">
+      <input id="group-name" placeholder="例：音楽、ゲーム、VTuber" maxlength="40" required>
+      <select id="group-parent" aria-label="親グループ"></select>
+      <button type="submit">グループを追加</button>
+    </form>
+    <p class="hint">「親グループ」を選ぶと、そのグループの中に作成されます。既存グループの親は、各行の選択欄から変更できます。</p>
+    <div id="groups"></div>
+  </section>
+
+  <section class="panel">
+    <h2>グループ内の並び順と仕切り</h2>
+    <p class="hint">グループを選び、チャンネルを「⠿」のドラッグまたは↑↓で並べ替えます。「仕切り」はチャンネルの間に引く線で、YouTubeのサイドバーではチャンネルのアイコンの位置から右端まで表示されます。名前順の並べ替えは、仕切りで区切られた区間ごとに行われます。</p>
+    <div class="order-bar">
+      <select id="order-group" aria-label="並べ替えるグループ"></select>
+      <button id="sort-asc" type="button">名前順 A→Z</button>
+      <button id="sort-desc" type="button">名前順 Z→A</button>
+      <button id="divider-end" type="button">末尾に仕切りを追加</button>
+    </div>
+    <div id="order-list"></div>
+  </section>
+
+  <section class="panel">
+    <div class="channel-title">
+      <h2>チャンネル</h2>
+      <div class="filters">
+        <input id="search" type="search" placeholder="チャンネル名で検索">
+        <select id="group-filter" aria-label="グループで絞り込み"></select>
+        <label class="check small"><input type="checkbox" id="include-sub" checked> 下位グループも含む</label>
+      </div>
+    </div>
+    <p class="hint">チャンネルはYouTube左側の「全取得」で一覧から自動収集します。登録解除したチャンネルは、「全取得」を押すとここから自動で消えます。</p>
+    <div id="channel-count" class="hint"></div>
+    <div id="channels"></div>
+  </section>
+
+  <section class="panel">
+    <h2>バックアップ</h2>
+    <p class="hint">グループ、所属、並び順、開閉状態、表示設定をJSONファイルで保存・復元できます。</p>
+    <div class="backup-row">
+      <button id="export-btn" type="button">エクスポート</button>
+      <select id="import-mode" aria-label="インポート方法">
+        <option value="merge">統合（同じIDはファイルの内容で上書き、他は残す）</option>
+        <option value="replace">置き換え（現在のデータをすべて入れ替える）</option>
+      </select>
+      <button id="import-btn" type="button">インポート…</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden>
+    </div>
+  </section>
+
+  <div id="status" role="status"></div>
+</main>
+<script src="common.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
